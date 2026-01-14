@@ -111,14 +111,14 @@ export const getAllUsersMatches = async (
         async () => {
           try {
             const { matchId } = decodeMatchShareCode(shareCode);
-            L.debug({ matchId, shareCode }, 'Requesting game data');
+            L.debug({ matchId, shareCode }, `Requesting game data`);
             const [match] = await Promise.all([
               promiseTimeout(
                 new Promise<GlobalOffensive.Match>((resolve) => {
                   pendingMatchResponses.set(matchId.toString(), resolve);
                 }),
                 {
-                  milliseconds: 30000,
+                  milliseconds: 60000,
                   message: `Error fetching match data for match ${shareCode}`,
                 },
               ),
@@ -130,7 +130,7 @@ export const getAllUsersMatches = async (
             return undefined;
           }
         },
-        { throwOnTimeout: true },
+        { throwOnTimeout: false },
       ),
     ),
   );
