@@ -140,3 +140,6 @@ dist
 
 config
 demos
+
+.DS_Store
+.idea/
