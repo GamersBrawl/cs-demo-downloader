@@ -31,6 +31,7 @@ const configFile = path.join(configDir, 'config.json');
 
 export const config = readJSONSync(configFile, 'utf-8') as Config;
 try {
+  // get base url from environment variable
   const url = 'https://ys440sg844kg8oockc4cwsos.is-on.cloud/api/v1/counter_strike_users/';
   const headers = {
     'X-API-Token': '117cb41fec941f9d746e1a9f73197d14f3f8c2fb5aa301ec6a49baef2db0bb7a',
