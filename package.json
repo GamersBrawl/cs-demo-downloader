@@ -19,6 +19,7 @@
     "fs-extra": "^11.2.0",
     "globaloffensive": "^3.0.0",
     "jsdom": "^23.0.1",
+    "minio": "^8.0.6",
     "p-queue": "^7.4.1",
     "p-timeout": "^6.1.2",
     "pino": "^8.16.2",

@@ -3,7 +3,6 @@ import axios from 'axios';
 import PQueue from 'p-queue';
 import { config } from './config.js';
 import L from './logger.js';
-import { updateLastShareCode } from './gamersbrawl.js';
 
 export interface MatchHistoryResponse {
   result: {
@@ -52,9 +51,6 @@ export const getAllNewMatchCodes = async (
     shareCodes.push(lastShareCode);
     // eslint-disable-next-line no-await-in-loop
     lastShareCode = await getNextMatchCode(steamId, authCode, lastShareCode, shareCodeQueue);
-  }
-  if (shareCodes[shareCodes.length - 1] && shareCodes[shareCodes.length - 1] !== 'n/a') {
-    await updateLastShareCode(steamId, shareCodes[shareCodes.length - 1] || '');
   }
   return shareCodes;
 };

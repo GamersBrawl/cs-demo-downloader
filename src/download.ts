@@ -7,6 +7,7 @@ import util from 'node:util';
 import stream from 'node:stream';
 import path from 'node:path';
 import L from './logger.js';
+import uploadFile from './minio.js';
 
 export interface DownloadableMatch {
   date: Date;
@@ -54,8 +55,11 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
       await fsp.rename(tempFilename, completedFilename);
       await fsp.utimes(completedFilename, match.date, match.date);
       L.info({ filename: completedFilename, date: match.date }, 'Demo save complete');
+      await uploadFile(completedFilename);
     } else {
       L.info({ filename: completedFilename }, 'File already exists, skipping download');
+      await uploadFile(completedFilename);
+      L.info({ filename: completedFilename }, 'Demo uploaded to minio?');
     }
     return null;
   } catch (err) {

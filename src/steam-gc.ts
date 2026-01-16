@@ -9,6 +9,7 @@ import { getAllNewMatchCodes } from './match-history.js';
 import { getStoreValue, setStoreValue } from './store.js';
 import { DownloadableMatch, downloadSaveDemo } from './download.js';
 import { appendDemoLog } from './demo-log.js';
+import { updateLastShareCode } from './gamersbrawl.js';
 
 export interface MatchIdentifier {
   shareCode: string;
@@ -200,12 +201,14 @@ export const getAllUsersMatches = async (
         }
         return true;
       }, undefined);
-      if (lastWorkingIdentifier)
+      if (lastWorkingIdentifier){
         await setStoreValue(
           'lastShareCode',
           lastWorkingIdentifier.steamId,
           lastWorkingIdentifier.shareCode,
         );
+        await updateLastShareCode(lastWorkingIdentifier.steamId, lastWorkingIdentifier.shareCode);
+      }
     }),
   );
 };
