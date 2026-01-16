@@ -42,7 +42,7 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
     const tempFilename = path.join(tempDemosDir, gcpdUrlToFilename(match.url, match.type));
 
     await fsx.mkdirp(demosDir); // redundant, but added in-case the temp directory is changed in the future to not be nested within the demos directory
-    const completedFilename = path.join(demosDir, gcpdUrlToFilename(match.url, match.type));
+    const completedFilename = path.join(demosDir, `${match.matchId}.dem`);
 
     const exists = await fsx.exists(completedFilename);
     if (!exists) {
