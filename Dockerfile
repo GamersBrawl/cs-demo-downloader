@@ -43,9 +43,9 @@ RUN npm ci --omit=dev
 COPY --from=build /usr/app/dist dist
 
 USER node
-ENV NODE_ENV=production CONFIG_DIR=/config DEMOS_DIR=/demos
+ENV NODE_ENV=production CONFIG_DIR=/usr/app/config DEMOS_DIR=/usr/app/demos
 
-VOLUME [ "/config" ]
-VOLUME [ "/demos" ]
+VOLUME [ "/usr/app/config" ]
+VOLUME [ "/usr/app/demos" ]
 
 ENTRYPOINT ["tini", "--", "docker-entrypoint.sh"]
