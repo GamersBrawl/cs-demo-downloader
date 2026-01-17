@@ -1,6 +1,6 @@
 import axios from 'axios';
 import bz2 from 'unbzip2-stream';
-import fs from 'node:fs';
+import fs, { unlink, unlinkSync, writeFile, writeFileSync } from 'node:fs';
 import fsp from 'fs/promises';
 import fsx from 'fs-extra';
 import util from 'node:util';
@@ -8,6 +8,7 @@ import stream from 'node:stream';
 import path from 'node:path';
 import L from './logger.js';
 import uploadFile from './minio.js';
+import Conversor from './conversor.js';
 
 export interface DownloadableMatch {
   date: Date;
@@ -44,6 +45,7 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
 
     await fsx.mkdirp(demosDir); // redundant, but added in-case the temp directory is changed in the future to not be nested within the demos directory
     const completedFilename = path.join(demosDir, `${match.matchId}.dem`);
+    const jsonFilename = path.join(demosDir, `${match.matchId}.json`);
 
     const exists = await fsx.exists(completedFilename);
     if (!exists) {
@@ -55,10 +57,21 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
       await fsp.rename(tempFilename, completedFilename);
       await fsp.utimes(completedFilename, match.date, match.date);
       L.info({ filename: completedFilename, date: match.date }, 'Demo save complete');
-      await uploadFile(completedFilename);
+      const conversor = new Conversor(completedFilename);
+      const data = conversor.toJson();
+      writeFileSync(jsonFilename, data);
+      await uploadFile(jsonFilename);
+      unlinkSync(completedFilename);
+      unlinkSync(jsonFilename);
+
     } else {
       L.info({ filename: completedFilename }, 'File already exists, skipping download');
-      await uploadFile(completedFilename);
+      const conversor = new Conversor(completedFilename);
+      const data = conversor.toJson();
+      writeFileSync(jsonFilename, data);
+      await uploadFile(jsonFilename);
+      unlinkSync(completedFilename);
+      unlinkSync(jsonFilename);
       L.info({ filename: completedFilename }, 'Demo uploaded to minio?');
     }
     return null;
