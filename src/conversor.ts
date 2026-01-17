@@ -6,9 +6,9 @@ class Conversor {
 
   TICK_RATE = 64;
 
-  players = [];
+  players: { [key: string]: any }[] = [];
 
-  playerDeath = [];
+  playerDeath: { [key: string]: any }[] = [];
 
   startTime?: Date;
 
@@ -18,7 +18,7 @@ class Conversor {
 
   match: { [key: string]: any } = {};
 
-  mySteamID: number;
+  mySteamID: string;
 
   filename: string;
 
@@ -29,7 +29,7 @@ class Conversor {
 
     this.players = parsePlayerInfo(filename);
     if (!this.players || this.players[0] == undefined) throw new Error('No players found in demo');
-    this.mySteamID = parseInt(this.players[0]['steamid'], 10);
+    this.mySteamID = this.players[0].steamid.toString();
     this.playerDeath = parseEvent(filename, 'player_death');
     this.startTime = stats.mtime;
 
@@ -39,7 +39,7 @@ class Conversor {
 
   parse() {
     let teamA = this.getTeamMates().map((player: { [key: string]: any }) => {
-      const steamId = parseInt(player['steamid'], 10);
+      const steamId: string = player['steamid'].toString();
       return {
         id: steamId,
         name: player['name'],
@@ -49,7 +49,7 @@ class Conversor {
       };
     });
     let teamB = this.getOpponentTeam().map((player: { [key: string]: any }) => {
-      const steamId = parseInt(player['steamid'], 10);
+      const steamId = player['steamid'].toString();
       return {
         id: steamId,
         name: player['name'],
@@ -94,8 +94,9 @@ class Conversor {
   identifyTeam() {
     const playerTeam = parseEvent(this.filename, 'player_team');
     if (!playerTeam) throw new Error('Player team not found');
+    console.log(this.mySteamID, playerTeam);
 
-    let me = playerTeam.find((player: any) => player.user_steamid == this.mySteamID);
+    let me = playerTeam.find((player: any) => player.user_steamid.toString() == this.mySteamID);
     if (me == undefined) throw new Error('My player not found');
     this.changeTeamTick = me.tick;
     this.teams = [me.oldteam, me.team];
@@ -114,7 +115,7 @@ class Conversor {
 
   getTeamMates() {
     const me = this.players.find(
-      (player: { [key: string]: any }) => player['steamid'] == this.mySteamID,
+      (player: { [key: string]: any }) => player['steamid'].toString() == this.mySteamID,
     );
     if (!me) throw new Error('My player not found');
     return this.players.filter(
@@ -123,9 +124,8 @@ class Conversor {
   }
 
   getOpponentTeam() {
-    const me
-      = this.players.find(
-      (player: { [key: string]: any }) => player['steamid'] == this.mySteamID,
+    const me = this.players.find(
+      (player: { [key: string]: any }) => player['steamid'].toString() == this.mySteamID,
     );
     if (!me) throw new Error('My player not found');
     return this.players.filter(
@@ -133,10 +133,9 @@ class Conversor {
     );
   }
 
-  getUsersTeamMates(steamId: number) {
-    const me
-      = this.players.find(
-      (player: { [key: string]: any }) => player['steamid'] == steamId,
+  getUsersTeamMates(steamId: string) {
+    const me = this.players.find(
+      (player: { [key: string]: any }) => player['steamid'].toString() == steamId,
     );
     if (!me) throw new Error('My player not found');
     return this.players.filter(
@@ -144,40 +143,58 @@ class Conversor {
     );
   }
 
-  getKills(steamid: number): number {
-    const cannotBeVictim = this.getUsersTeamMates(steamid).map(
-      (player: { [key: string]: any }) => player['steamid'],
+  getKills(steamid: string): number {
+    const cannotBeVictim = this.getUsersTeamMates(steamid).map((player: { [key: string]: any }) =>
+      player['steamid'].toString(),
     );
-    const kills = this.playerDeath.filter(
-      (death: { [key: string]: any }) => !cannotBeVictim.includes(death['user_steamid']) && death['attacker_steamid'] == steamid,
+    let kills = this.playerDeath.filter(
+      (death: { [key: string]: any }) =>
+        death['attacker_steamid'] != null
+    );
+    kills = kills.filter(
+      (death: { [key: string]: any }) =>
+        !cannotBeVictim.includes(death['user_steamid'].toString()) &&
+        death['attacker_steamid'].toString() == steamid,
     );
     return kills.length;
   }
 
-  getAssists(steamid: number): number {
-    const cannotBeVictim = this.getUsersTeamMates(steamid).map(
-      (player: { [key: string]: any }) => player['steamid'],
+  getAssists(steamid: string): number {
+    const cannotBeVictim = this.getUsersTeamMates(steamid).map((player: { [key: string]: any }) =>
+      player['steamid'].toString(),
     );
-    const assists = this.playerDeath.filter(
+    let assists = this.playerDeath.filter(
       (death: { [key: string]: any }) =>
-        !cannotBeVictim.includes(death['user_steamid']) && death['assister_steamid'] == steamid,
+        death['assister_steamid'] != null,
+    );
+    assists = assists.filter(
+      (death: { [key: string]: any }) =>
+        !cannotBeVictim.includes(death['user_steamid'].toString()) &&
+        death['assister_steamid'].toString() == steamid,
     );
     return assists.length;
   }
 
-  getPlayerDeaths(steamid: number): number {
-    const deaths = this.playerDeath.filter(
+  getPlayerDeaths(steamid: string): number {
+    let deaths = this.playerDeath.filter(
       (death: { [key: string]: any }) =>
-        death['assister_steamid'] != steamid &&
-        death['attacker_steamid'] != steamid &&
         death['attacker_steamid'] != null &&
-        death['user_steamid'] == steamid,
+        death['assister_steamid'] != null &&
+        death['user_steamid'] != null,
+    );
+    deaths = deaths.filter(
+      (death: { [key: string]: any }) =>
+        death['assister_steamid'].toString() != steamid &&
+        death['attacker_steamid'].toString() != steamid &&
+        death['user_steamid'].toString() == steamid,
     );
     return deaths.length;
   }
 
   getRoundTicks(): any[] {
-    const freezeEndTicks = parseEvent(this.filename, 'round_freeze_end').map((event: any) => event.tick);
+    const freezeEndTicks = parseEvent(this.filename, 'round_freeze_end').map(
+      (event: any) => event.tick,
+    );
     let rounds: any[] = [];
     freezeEndTicks.forEach((tick: any, index: any) => {
       rounds.push([tick, freezeEndTicks[index + 1] || null]);
@@ -207,20 +224,27 @@ class Conversor {
   }
 
   getBombPlanted(myTeam: boolean): number {
-    const usersWhoPlanted = parseEvent(this.filename, 'bomb_planted').map((event: any) => event['user_steamid']);
-    let team = this.getTeamMates().map((player: any) => player['steamid']);
-    if (!myTeam) team = this.getOpponentTeam().map((player: any) => player['steamid']);
+    const usersWhoPlanted = parseEvent(this.filename, 'bomb_planted').map((event: any) =>
+      event['user_steamid'].toString(),
+    );
+    let team = this.getTeamMates().map((player: any) => player['steamid'].toString());
+    if (!myTeam) team = this.getOpponentTeam().map((player: any) => player['steamid'].toString());
     let count = 0;
-    usersWhoPlanted.forEach((steamId: number) => count += team.includes(steamId) ? 1 : 0);
+    usersWhoPlanted.forEach((steamId: string) => (count += team.includes(steamId) ? 1 : 0));
     return count;
   }
 
   getBombDefused(myTeam: boolean): number {
-    const usersWhoDefused = parseEvent(this.filename, 'bomb_defused').map(
-      (event: any) => event['user_steamid'],
+    const usersWhoDefused = parseEvent(this.filename, 'bomb_defused').map((event: any) =>
+      event['user_steamid'].toString(),
     );
-    let team: number[] = this.getTeamMates().map((player) => player['steamid']);
-    if (!myTeam) team = this.getOpponentTeam().map((player) => player['steamid']);
+    let team: number[] = this.getTeamMates().map((player: { [key: string]: any }) =>
+      player['steamid'].toString(),
+    );
+    if (!myTeam)
+      team = this.getOpponentTeam().map((player: { [key: string]: any }) =>
+        player['steamid'].toString(),
+      );
     let count = 0;
     usersWhoDefused.forEach((steamId: number) => {
       count += team.includes(steamId) ? 1 : 0;

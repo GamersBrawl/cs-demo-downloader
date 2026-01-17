@@ -63,7 +63,6 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
       await uploadFile(jsonFilename);
       unlinkSync(completedFilename);
       unlinkSync(jsonFilename);
-
     } else {
       L.info({ filename: completedFilename }, 'File already exists, skipping download');
       const conversor = new Conversor(completedFilename);

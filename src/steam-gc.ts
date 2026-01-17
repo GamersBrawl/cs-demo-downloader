@@ -119,7 +119,7 @@ export const getAllUsersMatches = async (
                   pendingMatchResponses.set(matchId.toString(), resolve);
                 }),
                 {
-                  milliseconds: 60000,
+                  milliseconds: 10000,
                   message: `Error fetching match data for match ${shareCode}`,
                 },
               ),
