@@ -2,7 +2,7 @@ import { parseEvent, parseHeader, parsePlayerInfo } from '@laihoe/demoparser2';
 import fs from 'node:fs';
 
 class Conversor {
-  TEAMS = { 2: 'T', 3: 'CT' };
+  TEAMS: { [key: number]: string } = { 2: 'T', 3: 'CT' };
 
   TICK_RATE = 64;
 
@@ -12,11 +12,11 @@ class Conversor {
 
   startTime?: Date;
 
-  changeTeamTick?: number;
+  changeTeamTick: number = 0;
 
-  teams: number[] = [];
+  teams: [number, number] = [2, 3];
 
-  match: { [key: string]: any } = null;
+  match: { [key: string]: any } = {};
 
   mySteamID: number;
 
@@ -28,8 +28,8 @@ class Conversor {
     const stats = fs.statSync(filename);
 
     this.players = parsePlayerInfo(filename);
-    if (!this.players) throw new Error('No players found in demo');
-    this.mySteamID = parseInt(this.players[0].steamid, 10);
+    if (!this.players || this.players[0] == undefined) throw new Error('No players found in demo');
+    this.mySteamID = parseInt(this.players[0]['steamid'], 10);
     this.playerDeath = parseEvent(filename, 'player_death');
     this.startTime = stats.mtime;
 
@@ -95,7 +95,8 @@ class Conversor {
     const playerTeam = parseEvent(this.filename, 'player_team');
     if (!playerTeam) throw new Error('Player team not found');
 
-    let me = playerTeam.find(player => player.user_steamid == this.mySteamID);
+    let me = playerTeam.find((player: any) => player.user_steamid == this.mySteamID);
+    if (me == undefined) throw new Error('My player not found');
     this.changeTeamTick = me.tick;
     this.teams = [me.oldteam, me.team];
   }
@@ -112,7 +113,7 @@ class Conversor {
   }
 
   getTeamMates() {
-    const me: { [key: string]: any } = this.players.find(
+    const me = this.players.find(
       (player: { [key: string]: any }) => player['steamid'] == this.mySteamID,
     );
     if (!me) throw new Error('My player not found');
@@ -122,7 +123,8 @@ class Conversor {
   }
 
   getOpponentTeam() {
-    const me: { [key: string]: any } = this.players.find(
+    const me
+      = this.players.find(
       (player: { [key: string]: any }) => player['steamid'] == this.mySteamID,
     );
     if (!me) throw new Error('My player not found');
@@ -132,7 +134,8 @@ class Conversor {
   }
 
   getUsersTeamMates(steamId: number) {
-    const me: { [key: string]: any } = this.players.find(
+    const me
+      = this.players.find(
       (player: { [key: string]: any }) => player['steamid'] == steamId,
     );
     if (!me) throw new Error('My player not found');
@@ -173,41 +176,40 @@ class Conversor {
     return deaths.length;
   }
 
-  getRoundTicks(): [number[]] {
-    const freezeEndTicks = parseEvent(this.filename, 'round_freeze_end').map(event => event.tick);
-    let rounds = [];
-    freezeEndTicks.forEach((tick, index) => {
+  getRoundTicks(): any[] {
+    const freezeEndTicks = parseEvent(this.filename, 'round_freeze_end').map((event: any) => event.tick);
+    let rounds: any[] = [];
+    freezeEndTicks.forEach((tick: any, index: any) => {
       rounds.push([tick, freezeEndTicks[index + 1] || null]);
     });
     return rounds;
   }
 
   getRoundVictories(myTeam: boolean): number {
-    const victories = 0;
     const roundEnd = parseEvent(this.filename, 'round_end');
     if (!roundEnd) throw new Error('Round end not found');
 
-    let oldTeam = this.TEAMS[this.teams[1]];
-    let team = this.TEAMS[this.teams[0]];
+    let oldTeam: string | undefined = this.TEAMS[this.teams[1]];
+    let team: string | undefined = this.TEAMS[this.teams[0]];
 
     if (myTeam) {
       oldTeam = this.TEAMS[this.teams[0]];
       team = this.TEAMS[this.teams[1]];
     }
 
-    const oldTeamRounds = roundEnd.filter(round => round.tick <= this.changeTeamTick);
-    const oldTeamVictories = oldTeamRounds.filter(round => round.winner == oldTeam).length;
+    const oldTeamRounds = roundEnd.filter((round: any) => round.tick <= this.changeTeamTick);
+    const oldTeamVictories = oldTeamRounds.filter((round: any) => round.winner == oldTeam).length;
 
-    const teamRounds = roundEnd.filter(round => round.tick > this.changeTeamTick);
-    const teamVictories = teamRounds.filter(round => round.winner == team).length;
+    const teamRounds = roundEnd.filter((round: any) => round.tick > this.changeTeamTick);
+    const teamVictories = teamRounds.filter((round: any) => round.winner == team).length;
 
     return teamVictories + oldTeamVictories;
   }
 
   getBombPlanted(myTeam: boolean): number {
-    const usersWhoPlanted = parseEvent(this.filename, 'bomb_planted').map(event => event['user_steamid']);
-    let team = this.getTeamMates().map(player => player['steamid']);
-    if (!myTeam) team = this.getOpponentTeam().map(player => player['steamid']);
+    const usersWhoPlanted = parseEvent(this.filename, 'bomb_planted').map((event: any) => event['user_steamid']);
+    let team = this.getTeamMates().map((player: any) => player['steamid']);
+    if (!myTeam) team = this.getOpponentTeam().map((player: any) => player['steamid']);
     let count = 0;
     usersWhoPlanted.forEach((steamId: number) => count += team.includes(steamId) ? 1 : 0);
     return count;
@@ -215,12 +217,14 @@ class Conversor {
 
   getBombDefused(myTeam: boolean): number {
     const usersWhoDefused = parseEvent(this.filename, 'bomb_defused').map(
-      (event) => event['user_steamid'],
+      (event: any) => event['user_steamid'],
     );
-    let team = this.getTeamMates().map((player) => player['steamid']);
+    let team: number[] = this.getTeamMates().map((player) => player['steamid']);
     if (!myTeam) team = this.getOpponentTeam().map((player) => player['steamid']);
     let count = 0;
-    usersWhoDefused.forEach((steamId: number) => (count += team.includes(steamId) ? 1 : 0));
+    usersWhoDefused.forEach((steamId: number) => {
+      count += team.includes(steamId) ? 1 : 0;
+    });
     return count;
   }
 
@@ -238,8 +242,3 @@ class Conversor {
 }
 
 export default Conversor;
-
-const conversor = new Conversor(
-  '/Users/felipebolonhani/projects/gamersbrawl/cs-demo-downloader/demos/3797836808004305163.dem',
-);
-

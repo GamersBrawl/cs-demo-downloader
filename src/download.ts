@@ -1,6 +1,6 @@
 import axios from 'axios';
 import bz2 from 'unbzip2-stream';
-import fs, { unlink, unlinkSync, writeFile, writeFileSync } from 'node:fs';
+import fs, { unlinkSync, writeFileSync } from 'node:fs';
 import fsp from 'fs/promises';
 import fsx from 'fs-extra';
 import util from 'node:util';
