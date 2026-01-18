@@ -29,7 +29,7 @@ class Conversor {
 
     this.players = parsePlayerInfo(filename);
     if (!this.players || this.players[0] == undefined) throw new Error('No players found in demo');
-    this.mySteamID = this.players[0].steamid.toString();
+    this.mySteamID = this.players[0]['steamid'].toString();
     this.playerDeath = parseEvent(filename, 'player_death');
     this.startTime = stats.mtime;
 
