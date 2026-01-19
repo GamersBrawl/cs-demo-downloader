@@ -21,9 +21,9 @@ const handleGcpdUser = async (user: LoginCredential, gcpdQueue: PQueue, download
   L.trace({ matches }, 'New GCPD match details');
   await appendDemoLog(matches);
   const downloadResults = await Promise.all(
-    matches.map((match) =>
-      downloadQueue.add(() => downloadSaveDemo(match), { throwOnTimeout: true }),
-    ),
+    matches
+      .filter((match) => match.type === 'premier')
+      .map((match) => downloadQueue.add(() => downloadSaveDemo(match), { throwOnTimeout: true })),
   );
   const failedDownloads = downloadResults.filter((id): id is bigint => id !== null).sort();
   const firstFailedMatch = failedDownloads.at(0);
