@@ -14,6 +14,9 @@ export const updateLastShareCode = async (steamId: string, shareCode: string): P
 };
 
 export const getAuthCodes = async () => {
-  const response = await axios.get(`${BASE_URL}/counter_strike_users/`);
+  const headers = {
+    'X-API-Token': '117cb41fec941f9d746e1a9f73197d14f3f8c2fb5aa301ec6a49baef2db0bb7a',
+  };
+  const response = await axios.get(`${BASE_URL}/counter_strike_users/`, { headers });
   return response.data;
 };
