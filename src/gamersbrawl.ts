@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://ys440sg844kg8oockc4cwsos.is-on.cloud/api/v1';
+const BASE_URL = 'https://api.gamersbrawl.com/api/v1';
 
 export const updateLastShareCode = async (steamId: string, shareCode: string): Promise<void> => {
   const headers = {
