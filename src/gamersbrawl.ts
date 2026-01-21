@@ -14,6 +14,6 @@ export const updateLastShareCode = async (steamId: string, shareCode: string): P
 };
 
 export const getAuthCodes = async () => {
-  const response = await axios.get(`${BASE_URL}/auth_codes/`);
+  const response = await axios.get(`${BASE_URL}/counter_strike_users/`);
   return response.data;
 };
