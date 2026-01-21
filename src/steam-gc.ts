@@ -181,9 +181,9 @@ export const getAllUsersMatches = async (
   // Download the demos
   await appendDemoLog(dlMatches);
   const downloadResults = await Promise.all(
-    dlMatches
-      .filter((match) => match.type === 'premier')
-      .map((match) => downloadQueue.add(() => downloadSaveDemo(match), { throwOnTimeout: true })),
+    dlMatches.map((match) =>
+      downloadQueue.add(() => downloadSaveDemo(match), { throwOnTimeout: true }),
+    ),
   );
   const failedDownloads = downloadResults.filter((id): id is bigint => id !== null).sort();
 

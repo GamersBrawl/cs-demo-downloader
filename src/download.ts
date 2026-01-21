@@ -45,7 +45,7 @@ export const downloadSaveDemo = async (match: DownloadableMatch): Promise<bigint
 
     await fsx.mkdirp(demosDir); // redundant, but added in-case the temp directory is changed in the future to not be nested within the demos directory
     const completedFilename = path.join(demosDir, `${match.matchId}.dem`);
-    const jsonFilename = path.join(demosDir, `${match.matchId}.json`);
+    const jsonFilename = path.join(demosDir, `${match.matchId}_${match.type}.json`);
 
     const exists = await fsx.exists(completedFilename);
     if (!exists) {
