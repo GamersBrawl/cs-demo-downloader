@@ -14,7 +14,6 @@ const uploadFile: (filePath: string) => Promise<boolean> = async (filePath: stri
   const bucketName = 'gamersbrawl';
   const filename = filePath.split('/').pop() || filePath;
   const destinationFilename = path.join('counterstrike/matches', filename);
-  console.log(`destinationFilename: ${destinationFilename} => ${filePath}`);
 
   try {
     const exists = await minioClient.bucketExists(bucketName);

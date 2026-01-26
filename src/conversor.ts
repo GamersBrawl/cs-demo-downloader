@@ -94,7 +94,6 @@ class Conversor {
   identifyTeam() {
     const playerTeam = parseEvent(this.filename, 'player_team');
     if (!playerTeam) throw new Error('Player team not found');
-    console.log(this.mySteamID, playerTeam);
 
     let me = playerTeam.find((player: any) => player.user_steamid.toString() == this.mySteamID);
     if (me == undefined) throw new Error('My player not found');
