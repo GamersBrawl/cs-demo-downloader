@@ -161,7 +161,9 @@ export const getAllUsersMatches = async (
     const playerCount = match.roundstatsall[0]?.reservation.account_ids.filter((id) => id !== 0)
       .length;
     const isWingman = playerCount && playerCount <= 4;
-    const isPremier = match.roundstatsall[0]?.b_switched_teams; // null for comp, true for premier
+    const isPremier =
+      match.roundstatsall[0]?.b_switched_teams === true ||
+      match.roundstatsall[0]?.b_switched_teams === false; // null for comp, true for premier
     let type: string;
     if (isWingman) {
       type = 'wingman';
